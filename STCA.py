@@ -19,7 +19,7 @@ def initialize_cars(car_length, num_cars):
         Cars.append(Car(length=car_length, position=i, velocity=0, gap=0))
 
     # END WALL
-    Cars.append(Car(length=car_length, position=50, velocity=0, gap=0))
+    Cars.append(Car(length=car_length, position=EW, velocity=0, gap=0))
 
     #set initial gap to end wall
     Cars[-2].gap = Cars[-1].position - Cars[-2].position
@@ -34,11 +34,10 @@ def initialize_cars(car_length, num_cars):
 def update_cars(rand_prob, dt):
     
     for car in (Cars[::-1])[1:]:
-
         
         # speedup
         if car.velocity != max_velocity:
-            car.velocity += 1
+            car.velocity += dt
 
         # dont hit each other
         if car.velocity > car.gap:
@@ -47,17 +46,20 @@ def update_cars(rand_prob, dt):
         # randomize changing speed of cars bc of environ and such
         if car.velocity != 0:
            if random.random() < rand_prob:
-               car.velocity -= 1
+               car.velocity -= random.random()
+
             
         # move the car to new position
         car.position += car.velocity
 
-        # update gap between cars
         car_ahead = Cars[Cars.index(car) + 1]
-        car.gap = car_ahead.position - car.position
+        
+        # update gap between cars
+        car.gap = car_ahead.position - (car.position+1)
         
     return
-    
+
+
 def display_stats():
     for car in Cars[:-1]:
         print(f"Car Stats: \n Position: {car.position} \n Velocity: {car.velocity} \n Gap: {car.gap}")
@@ -67,6 +69,7 @@ def display_stats():
     return
          
 
+
 if __name__ == "__main__":
 
     Cars = []
@@ -75,19 +78,19 @@ if __name__ == "__main__":
     N = int(input("Input Number of Cars: "))
     dt = float(input("Enter timestep: "))
     M = int(input("Enter Max Segments in given timestep: "))
+    EW = int(input("Enter End Wall Distance: "))
 
-    max_velocity = float(M * L) / dt
+#    max_velocity = float(M * L) / dt
+    max_velocity = M
 
     initialize_cars(L, N)
 
-    T = int(input("Enter Number of timesteps: "))
-
     # subplots() function you can draw
     # multiple plots in one figure
-    fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(100, 10))
+    fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(120, 10))
     # set limit for x and y axis
-    axes.set_ylim(0, 60)
-    axes.set_xlim(0, 20)
+    axes.set_ylim(-100, EW+10)
+    axes.set_xlim(0, 100)
 
     # style for plotting line
     plt.style.use("ggplot")
@@ -98,16 +101,17 @@ if __name__ == "__main__":
     
     def animate(i):
         print("____________________________________")
+
         x1.append(i)
 
         for o in range(len(y1)):
             y1[o].append(Cars[o].position)
                 
         display_stats()
-        update_cars(0, dt)
+        update_cars(.3, dt)
 
         for car in y1:
-            axes.plot(x1, car, color="red")
+            axes.plot(x1, car)
 
 
     # set ani variable to call the
