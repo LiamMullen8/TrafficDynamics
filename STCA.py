@@ -1,9 +1,8 @@
 import random
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 import numpy as np
 import matplotlib
-from matplotlib import style
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 from matplotlib.animation import FuncAnimation
 
 class Car:
