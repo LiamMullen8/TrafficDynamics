@@ -35,6 +35,9 @@ def initialize_cars(car_length, num_cars):
 def update_cars(rand_prob, dt):
     
     for car in (Cars[::-1])[1:]:
+
+        ##############################################
+        # 4 RULES OF MOTION
         
         # speedup
         if car.velocity != max_velocity:
@@ -48,11 +51,11 @@ def update_cars(rand_prob, dt):
         if car.velocity != 0:
            if random.random() < rand_prob:
                car.velocity -= random.random()
-
-            
+    
         # move the car to new position
         car.position += car.velocity
-
+        ##############################################
+        
         # update gap between cars
         car.gap = Cars[Cars.index(car)+1].position - (car.position+1)
         
@@ -81,55 +84,63 @@ def measure_flux(x0, t0, dt):
     
 if __name__ == "__main__":
 
-    Cars = []
-
-    L = int(input("Input Car Length: "))
+    L = float(input("Input Car Length: "))
     N = int(input("Input Number of Cars: "))
     dt = float(input("Enter timestep: "))
-    M = int(input("Enter Max Segments in given timestep: "))
-    EW = int(input("Enter End Wall Distance: "))
-
+    M = float(input("Enter Max Velocity: "))
+    EW = float(input("Enter End Wall Distance: "))
     max_velocity = float(M * L) / dt
-    #max_velocity = M
+
+    Cars = []
+
+
 
     initialize_cars(L, N)
 
+    # setup graph
     fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(120, 10))
 
-    axes.set_xlabel("time interval (t)")
-    axes.set_ylabel("position (x)")
+    axes.set_xlabel("Time (t)")
+    axes.set_ylabel("Position (x)")
 
     # set limit for x and y axis
     axes.set_ylim(-100, EW+10)
     axes.set_xlim(0, 500)
 
 
-    # store element position after every iteration
+    # store car position after every time step
     x1, y1 = [0], [[car.position] for car in Cars[:-1]]
 
-    # line for each car
+    # graph line for each car
     P = [axes.plot(x1, car) for car in y1]
+
     
     def animate(i):
-        #print("____________________________________")
-        
+
+        ##########
+        # add coords of each car to graph respective line
         x1.append(i)
 
         for o in range(len(y1)):
             y1[o].append(Cars[o].position)
-                
+        ##########
+
         display_stats()
         update_cars(.3, dt)
 
+        ##########
+        # update each line of graph
         for L in range(len(P)):
             P[L][0].set_data(x1[:i],y1[L][:i])
-
+        ##########
+        
+        # sort cars by pos so each can react to the car immediately in front
         Cars.sort(key=lambda x: x.position)
-            
+
+        # math
         measure_density(x0=25, dx=10, t0=i)
         measure_flux(x0=50, t0=i, dt=2.5)
 
-
-    anim = FuncAnimation(fig, animate, frames=int(input("#frames:")), interval=1, repeat=TrueFalse)
+        
+    anim = FuncAnimation(fig, animate, frames=int(input("#frames:")), interval=1, repeat=False)
     plt.show()
-
