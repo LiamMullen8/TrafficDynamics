@@ -141,6 +141,10 @@ if __name__ == "__main__":
         measure_density(x0=25, dx=10, t0=i)
         measure_flux(x0=50, t0=i, dt=2.5)
 
-        
+    # animation driver    
     anim = FuncAnimation(fig, animate, frames=int(input("#frames:")), interval=1, repeat=False)
+    
+    # save animation
+    writervideo = animation.FFMpegWriter(fps=60)
+    anim.save('Noncolliding.mp4', writer=writervideo)
     plt.show()
