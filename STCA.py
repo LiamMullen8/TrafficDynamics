@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 import matplotlib
+from matplotlib import style
 from matplotlib.animation import FuncAnimation
 
 class Car:
@@ -59,19 +60,20 @@ def update_cars(rand_prob, dt):
 
 
 def display_stats():
+    
     for car in Cars[:-1]:
         print(f"Car Stats: \n Position: {car.position} \n Velocity: {car.velocity} \n Gap: {car.gap}")
     print(f"End Wall: Position: {Cars[-1].position}")
 
 def measure_density(x0, dx, t0):
 
-    cars_in_interval = list(filter(lambda car: (x0-dx <= car.position <= x0+dx), Cars))
+    cars_in_interval = list(filter(lambda car: (x0-dx <= car.position <= x0+dx), Cars[:-1]))
     density = len(cars_in_interval) / (2 * dx)
     print(f"density @ x0, t0: {(x0,t0)}: {density}")
 
 def measure_flux(x0, t0, dt):
 
-    cars_in_interval = list(filter(lambda car: ((car.position - car.velocity*dt) < x0 < (car.position + car.velocity*dt)), Cars))
+    cars_in_interval = list(filter(lambda car: ((car.position - car.velocity*dt) < x0 < (car.position + car.velocity*dt)), Cars[:-1]))
     flux = len(cars_in_interval) / 2*dt
     print(f"flux @ x0,t0: {(x0,t0)}: {flux}")
 
@@ -92,39 +94,40 @@ if __name__ == "__main__":
 
     initialize_cars(L, N)
 
-    # subplots() function you can draw
-    # multiple plots in one figure
     fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(120, 10))
+    plt.style.use('seaborn-darkgrid')
+    axes.set_xlabel("time interval (t)")
+    axes.set_ylabel("position (x)")
+
     # set limit for x and y axis
     axes.set_ylim(-100, EW+10)
     axes.set_xlim(0, 500)
 
-    # style for plotting line
-    plt.style.use("ggplot")
 
-    # create 5 list to get store element
-    # after every iteration
-    x1, y1 = [], [[] for _ in range(N)]
+    # store element position after every iteration
+    x1, y1 = [0], [[car.position] for car in Cars[:-1]]
+
+    # line for each car
+    P = [axes.plot(x1, car) for car in y1]
     
     def animate(i):
-        print("____________________________________")
-
+        #print("____________________________________")
+        
         x1.append(i)
 
         for o in range(len(y1)):
             y1[o].append(Cars[o].position)
                 
-        display_stats()
+        #display_stats()
         update_cars(.3, dt)
+
+        for L in range(len(P)):
+            P[L][0].set_data(x1[:i],y1[L][:i])
+            
         measure_density(x0=25, dx=10, t0=i)
         measure_flux(x0=25, t0=i, dt=3)
-        
-        for car in y1:
-            axes.plot(x1, car)
 
 
-    # set ani variable to call the
-    # function recursively
-    anim = FuncAnimation(fig, animate,frames=100, interval=1, repeat=False)
+    anim = FuncAnimation(fig, animate, frames=250, interval=1, repeat=False)
     plt.show()
 
