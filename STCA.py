@@ -8,9 +8,9 @@ from matplotlib.animation import FuncAnimation
 
 class Car:
     def __init__(self, length, position, velocity, gap):
-        self.length = length        # 
-        self.position = position    #
-        self.velocity = velocity    # for each time step, car can move m segments up to M. (this is its velocity)
+        self.length = length        # length of care/each cell
+        self.position = position    # distance from origin
+        self.velocity = velocity    # for each time step, car can move m segments up to M.
         self.gap = gap              # num of cells between this car and the next
 
         
@@ -89,13 +89,13 @@ if __name__ == "__main__":
     M = int(input("Enter Max Segments in given timestep: "))
     EW = int(input("Enter End Wall Distance: "))
 
-    #    max_velocity = float(M * L) / dt
-    max_velocity = M
+    max_velocity = float(M * L) / dt
+    #max_velocity = M
 
     initialize_cars(L, N)
 
     fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(120, 10))
-    plt.style.use('seaborn-darkgrid')
+
     axes.set_xlabel("time interval (t)")
     axes.set_ylabel("position (x)")
 
@@ -118,16 +118,18 @@ if __name__ == "__main__":
         for o in range(len(y1)):
             y1[o].append(Cars[o].position)
                 
-        #display_stats()
+        display_stats()
         update_cars(.3, dt)
 
         for L in range(len(P)):
             P[L][0].set_data(x1[:i],y1[L][:i])
+
+        Cars.sort(key=lambda x: x.position)
             
         measure_density(x0=25, dx=10, t0=i)
-        measure_flux(x0=25, t0=i, dt=3)
+        measure_flux(x0=50, t0=i, dt=2.5)
 
 
-    anim = FuncAnimation(fig, animate, frames=250, interval=1, repeat=False)
+    anim = FuncAnimation(fig, animate, frames=int(input("#frames:")), interval=1, repeat=TrueFalse)
     plt.show()
 
