@@ -12,7 +12,7 @@ class Car:
         self.velocity = velocity    # for each time step, car can move m segments up to M. (this is its velocity)
         self.gap = gap              # num of cells between this car and the next
 
-    
+        
 def initialize_cars(car_length, num_cars):
     
     for i in range(0, num_cars):
@@ -52,10 +52,8 @@ def update_cars(rand_prob, dt):
         # move the car to new position
         car.position += car.velocity
 
-        car_ahead = Cars[Cars.index(car) + 1]
-        
         # update gap between cars
-        car.gap = car_ahead.position - (car.position+1)
+        car.gap = Cars[Cars.index(car)+1].position - (car.position+1)
         
     return
 
@@ -63,13 +61,22 @@ def update_cars(rand_prob, dt):
 def display_stats():
     for car in Cars[:-1]:
         print(f"Car Stats: \n Position: {car.position} \n Velocity: {car.velocity} \n Gap: {car.gap}")
-
     print(f"End Wall: Position: {Cars[-1].position}")
+
+def measure_density(x0, dx, t0):
+
+    cars_in_interval = list(filter(lambda car: (x0-dx <= car.position <= x0+dx), Cars))
+    density = len(cars_in_interval) / (2 * dx)
+    print(f"density @ x0, t0: {(x0,t0)}: {density}")
+
+def measure_flux(x0, t0, dt):
+
+    cars_in_interval = list(filter(lambda car: ((car.position - car.velocity*dt) < x0 < (car.position + car.velocity*dt)), Cars))
+    flux = len(cars_in_interval) / 2*dt
+    print(f"flux @ x0,t0: {(x0,t0)}: {flux}")
+
+
     
-    return
-         
-
-
 if __name__ == "__main__":
 
     Cars = []
@@ -80,7 +87,7 @@ if __name__ == "__main__":
     M = int(input("Enter Max Segments in given timestep: "))
     EW = int(input("Enter End Wall Distance: "))
 
-#    max_velocity = float(M * L) / dt
+    #    max_velocity = float(M * L) / dt
     max_velocity = M
 
     initialize_cars(L, N)
@@ -90,7 +97,7 @@ if __name__ == "__main__":
     fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(120, 10))
     # set limit for x and y axis
     axes.set_ylim(-100, EW+10)
-    axes.set_xlim(0, 100)
+    axes.set_xlim(0, 500)
 
     # style for plotting line
     plt.style.use("ggplot")
@@ -109,13 +116,15 @@ if __name__ == "__main__":
                 
         display_stats()
         update_cars(.3, dt)
-
+        measure_density(x0=25, dx=10, t0=i)
+        measure_flux(x0=25, t0=i, dt=3)
+        
         for car in y1:
             axes.plot(x1, car)
 
 
     # set ani variable to call the
     # function recursively
-    anim = FuncAnimation(fig, animate)
+    anim = FuncAnimation(fig, animate,frames=100, interval=1, repeat=False)
     plt.show()
 
