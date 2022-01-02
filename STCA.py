@@ -72,13 +72,13 @@ def display_stats():
     
     for car in Cars[:-1]:
         print(f"Car Stats: \n Position: {car.position} \n Velocity: {car.velocity} \n Gap: {car.gap}")
-    print(f"End Wall: Position: {Cars[-1].position}")
+    print(f"End Wall: Position: {Cars[-1].position}\n")
 
 def measure_density(x0, dx, t0):
 
     cars_in_interval = list(filter(lambda car: (x0-dx <= car.position <= x0+dx), Cars[:-1]))
     density = float(len(cars_in_interval)) / (2.0 * dx)
-    print(f"density @ x0, t0: {(x0,t0)}: {density}")
+    print(f"{t0}: {cars_in_interval} \n density @ x0, t0: {(x0,t0)}: {density}")
     return density
 
 def measure_flux(x0, t0, dt):
@@ -130,29 +130,22 @@ if __name__ == "__main__":
 
 
     # Working range for Density 
-    #car_ax.axhline(D_range[0]-D_range[1], color="r")
-    #car_ax.axhline(D_range[0]+D_range[1],color="r")
     car_ax.fill_between(np.arange(0,f+1), D_range[0]-D_range[1], D_range[0]+D_range[1], alpha=0.2, color='b')
 
     # Working range for flux
-    #car_ax.axvline(F_range[0]-F_range[1])
-    #car_ax.axvline(F_range[0]+F_range[1])
-    #car_ax.axhline(F_range[0], F_range[0]-F_range[1], F_range[0]+F_range[1])
     # car_ax.fill_between(np.arange(0,f+1), where=D_range[0]-D_range[1], D_range[0]+D_range[1], alpha=0.2, color='b')
     
     Dens = dens_ax.plot([],[], lw=2, color='b')
-    Dens_x,Dens_y = [],[]
+    Dens_y = []
     
-    #dens_ax.set_ylim(0, .25)
     dens_ax.set_xlim(0, f)
     dens_ax.set_xlabel("Time (t)")
     dens_ax.set_ylabel("Density (p rho)")
     dens_ax.set_title(f"Density at position x0={D_range[0]}, dx={D_range[1]}")
 
     Flux = flux_ax.plot([],[], lw=2, color='g')
-    Flux_x, Flux_y = [],[]
+    Flux_y = []
 
-    #flux_ax.set_ylim(0, 5)
     flux_ax.set_xlim(0, f)
     flux_ax.set_xlabel("Time (t)")
     flux_ax.set_ylabel("Flux (J)")
@@ -160,12 +153,13 @@ if __name__ == "__main__":
     ####################################################################################
     
     def animate(i):
-
-        update_cars(.1, dt)
+        
+        update_cars(.5, dt)
+        #display_stats()
 
         ##########
         # add coords of each car to graph respective line
-        x1.append(i)
+        x1.append(i*dt)
 
         for o in range(len(y1)):
             y1[o].append(Cars[o].position)
@@ -181,27 +175,27 @@ if __name__ == "__main__":
         # sort cars by pos so each can react to the car immediately in front
         #Cars[:-1] = sorted(Cars[:-1], key=lambda x: x.position)
 
-        #display_stats()
 
         # math
-        density = measure_density(x0=25, dx=10, t0=i)
-        Dens_x.append(i)
+        density = measure_density(x0=D_range[0], dx=D_range[1], t0=i*dt)
+        #Dens_x.append(dt)
         Dens_y.append(density)
         
-        flux = measure_flux(x0=50, t0=i, dt=2.5)
-        Flux_x.append(i)
+        flux = measure_flux(x0=F_range[0], t0=i*dt, dt=F_range[1])
+        #Flux_x.append(dt)
         Flux_y.append(flux)
 
-        Dens[0].set_data(Dens_x[:i], Dens_y[:i])
-        Flux[0].set_data(Flux_x[:i], Flux_y[:i])
+        Dens[0].set_data(x1[:i], Dens_y[:i])
+        Flux[0].set_data(x1[:i], Flux_y[:i])
         
         car_ax.set_ylim(min(y1[0])-10, EW+10)     
         dens_ax.set_ylim(0, max(Dens_y)+.1)     
         flux_ax.set_ylim(0, max(Flux_y)+.1)     
         
     # animation driver    
-    anim = FuncAnimation(fig, animate, frames=f, interval=1, repeat=True)
+    anim = FuncAnimation(fig, animate, frames=int(f//dt), interval=1, repeat=False)
     
     # save animation
-    anim.save('Noncolliding.mp4', fps=60)
+    writervideo = animation.FFMpegWriter(fps=60) 
+    anim.save('Noncolliding.mp4', writer=writervideo)
     plt.show()
